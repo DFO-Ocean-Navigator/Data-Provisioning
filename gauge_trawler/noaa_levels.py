@@ -43,22 +43,6 @@ def noa_tides(output_location, start_date, end_date):
     datum_param = 'DATUM=%22MLLW%22'
     params = AMP.join((OUT_VARS, station_id_param, datum_param, start_date_param, end_date_param))
     url = URL_ROOT + params
-    print(url)
-    url_breakdown = (
-        """
-        https://opendap.co-ops.nos.noaa.gov/erddap/tabledap/IOOS_Hourly_Height_Verified_Water_Level.nc?
-            STATION_ID%2C
-            DATUM%2C
-            BEGIN_DATE%2C
-            END_DATE%2C
-            WL_VALUE&STATION_ID=%228423898%22&
-            DATUM=%22MLLW%22&
-            BEGIN_DATE%3E=%2220170101%2012%3A00%22&
-            END_DATE%3C=%2220170201%2012%3A00%22&
-            time%3E=2017-02-26T00%3A00%3A00Z&orderBy(%22STATION_ID%22)
-        
-        """
-    )
 
     result = "{0}/test{1}{2}.nc".format(output_location, end_month, end_year)
     urlrequest.urlretrieve(url, result)
