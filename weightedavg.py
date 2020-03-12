@@ -12,6 +12,15 @@ import sys
 
 if len(sys.argv) != 5:
     print("Too few or too many arguments")
+    print("""
+
+Required Arguments:
+    finalHour    int     Last file to be processed 
+    Run          str     Fully Qualified path up until run hour
+    outDir       str     Base output directory
+    dim          str     Dimmensions (2D or 3D)
+
+            """)
     sys.exit()
 
 finalHour = int(sys.argv[1])
@@ -28,15 +37,15 @@ for i in range(finalHour - 3, finalHour + 1):
 dataFiles = xarray.open_mfdataset(fileNames)
 finalTime = dataFiles['time'].values[-1]
 
-new = dataFiles.isel({'time': 0})
+newData = dataFiles.isel({'time': 0})
 
 count = 0
 
 for var in dataFiles.variables:
     if count > 5:
         avgd = numpy.average(dataFiles[var], 0, weights=weights)
-        new[var] = xarray.DataArray(avgd, [dataFiles['yc'], dataFiles['xc']])
+        newData[var] = xarray.DataArray(avgd, [dataFiles['yc'], dataFiles['xc']])
     count += 1
 
-new = new.expand_dims({'time': finalTime})
-new.to_netcdf("output.nc")
+newData = newData.expand_dims({'time': finalTime})
+newData.to_netcdf("output.nc")
