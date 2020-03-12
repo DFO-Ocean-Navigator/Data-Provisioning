@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# list of directories that RIOPS files exist in
-directories=('/home/buildadm/riopssubset')
+# list of directories that RIOPS files exist in, seperated by spaces
+directories=''
 
 logfile='weightedavgWrap.log'
-outdir='/home/buildadm/riopsout'
+outdir=''
 dims='2D 3D'
 
 # Create output dir if not already created
