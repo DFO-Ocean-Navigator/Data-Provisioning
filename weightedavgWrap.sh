@@ -3,9 +3,11 @@
 # list of directories that RIOPS files exist in, seperated by spaces
 directories=''
 
+workingDir=''
 logfile='weightedavgWrap.log'
 outdir=''
 dims='2D 3D'
+
 
 # Create output dir if not already created
 if [ ! -d ${outdir} ]
@@ -13,6 +15,7 @@ then
     mkdir $outdir
 fi
 
+# Normalize data by creating 3h averages
 for dim in $dims ; do
     # Create subfolder for 2D / 3D
     if [ ! -d ${outdir}/${dim}/ ]
@@ -40,8 +43,9 @@ for dim in $dims ; do
                 # Generate average or create symbolic link to average
                 if [ -e ${file::-17}02_${dim}_ps5km60N.nc ]
                 then
-                    echo "python weightedavg.py 3 ${file::-19} ${outdir} ${dim}" >> $logfile
-                    python weightedavg.py 3 ${file::-19} ${outdir} ${dim} 2>> $logfile
+                    ncks --mk_rec_dmn time ${run}_000_${dim}_ps5km60N.nc /tmp/tmp${run}.nc
+                    ncra -w 0.5,1,1,0.5 ${workingDir}/tmp${run}.nc ${run}_001_${dim}_ps5km60N.nc ${run}_002_${dim}_ps5km60N.nc ${run}_003_${dim}_ps5km60N.nc ${outdir}/${run}_003_${dim}_ps5km60N
+                    rm /tmp/*.nc
                 else
                     echo "ln -s ${file::-17}03*.nc ${outdir}/${dim}/${run::-4}/" >> $logfile
                     ln -s ${file::-17}03*.nc ${outdir}/${dim}/${run::-4}/ 2>> $logfile
@@ -55,8 +59,9 @@ for dim in $dims ; do
                 # Generate average or create symbolic link to average
                 if [ -e ${file::-17}05_${dim}_ps5km60N.nc ]
                 then
-                    echo "python weightedavg.py 6 ${file::-19} ${outdir} ${dim}" >> $logfile
-                    python weightedavg.py 6 ${file::-19} ${outdir} ${dim} 2>> $logfile
+                    ncks --mk_rec_dmn time ${run}_003_${dim}_ps5km60N.nc /tmp/tmp${run}.nc
+                    ncra -w 0.5,1,1,0.5 ${workingDir}/tmp${run}.nc ${run}_004_${dim}_ps5km60N.nc ${run}_005_${dim}_ps5km60N.nc ${run}_006_${dim}_ps5km60N.nc ${outdir}/${run}_006_${dim}_ps5km60N
+                    rm /tmp/*.nc
                 else
                     echo "ln -s ${file::-17}06*.nc ${outdir}/${dim}/" >> $logfile
                     ln -s ${file::-17}06*.nc ${outdir}/${dim}/ 2>> $logfile
@@ -65,3 +70,30 @@ for dim in $dims ; do
         done
     done
 done
+
+# Generate monthly averages
+days="31 28 31 30 31 30 31 31 30 31 30 31"
+daysleap="31 29 31 30 31 30 31 31 30 31 30 31"
+monthDir=''
+
+if [ ! -d ${monthDir} ]
+then
+    mkdir $monthDir
+fi
+
+for dim in $dims ; do
+    allFiles=`find ${outdir} -type f -name "*${dim}_ps5km60N.nc"`
+    for file in $allFiles
+        fname=`filename $file`
+        if [ ! -e monthDir/${fname::-21} ]
+        then
+            # leapYear check
+            date -d $1-02-29 &>/dev/null && monthDays=$daysleap || monthDays=$days
+            thisMonth=`find ${outdir} -type f -name "${fname::-21}*_${dim}_ps5km60N.nc"`
+            if [ ${#thisMonth[@]} == ((monthDays[${fname:4:2} - 1])) ] ; then
+                ncra $thisMonth ${monthDir}/${dim}/${fname:0:6}.nc
+            fi
+        fi
+    done
+done
+        
