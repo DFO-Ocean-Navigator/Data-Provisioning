@@ -82,18 +82,28 @@ then
 fi
 
 for dim in $dims ; do
+    # Create subdirs if non-existing
+    if [ ! -d ${monthDir}/${dim}/ ]
+    then
+        mkdir ${monthDir}/${dim}/
+    fi
+
     allFiles=`find ${outdir} -type f -name "*${dim}_ps5km60N.nc"`
-    for file in $allFiles
+    for file in $allFiles ; do
         fname=`filename $file`
-        if [ ! -e monthDir/${fname::-21} ]
+
+        # index for month starting at 0
+        month=$((${fname:4:2} - 1))
+        year=${fname:0:4}
+        
+        if [ ! -e ${monthDir}/${dim}/${fname::-21}.nc ]
         then
             # leapYear check
-            date -d $1-02-29 &>/dev/null && monthDays=$daysleap || monthDays=$days
+            date -d $year-02-29 &>/dev/null && monthDays=$daysleap || monthDays=$days
             thisMonth=`find ${outdir} -type f -name "${fname::-21}*_${dim}_ps5km60N.nc"`
-            if [ ${#thisMonth[@]} == ((monthDays[${fname:4:2} - 1])) ] ; then
+            if [[ $(( monthDays[${month}] * 8 )) == ${#thisMonth[@]} ]] ; then
                 ncra $thisMonth ${monthDir}/${dim}/${fname:0:6}.nc
             fi
         fi
     done
 done
-        
