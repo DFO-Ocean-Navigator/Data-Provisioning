@@ -9,10 +9,11 @@ import subprocess
 import netCDF4 as nc
 import xarray as xr
 
-months=[4,6,9,11]
-for month in months:
+months=[1,2,3,4,5,6,7,8,9,10,11,12]
+enddays=[31,28,31,30,31,30,31,31,30,31,30,31]
+for month,endday in zip(months, endday):
     sd=datetime.datetime(1993,month,1)
-    ed=datetime.datetime(2018,month,30)
+    ed=datetime.datetime(2018,month,endday)
     md=datetime.datetime(1993,month,16)
     f = glob.glob('monthly/*_{0:02d}_*.nc'.format(month))[0]
     print(f)
