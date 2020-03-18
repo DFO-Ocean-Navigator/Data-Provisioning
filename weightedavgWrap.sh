@@ -3,7 +3,6 @@
 # list of directories that RIOPS files exist in, seperated by spaces
 directories=''
 
-workingDir=''
 logfile='weightedavgWrap.log'
 outdir=''
 dims='2D 3D'
@@ -43,9 +42,20 @@ for dim in $dims ; do
                 # Generate average or create symbolic link to average
                 if [ -e ${file::-17}02_${dim}_ps5km60N.nc ]
                 then
-                    ncks --mk_rec_dmn time ${run}_000_${dim}_ps5km60N.nc /tmp/tmp${run}.nc
-                    ncra -w 0.5,1,1,0.5 ${workingDir}/tmp${run}.nc ${run}_001_${dim}_ps5km60N.nc ${run}_002_${dim}_ps5km60N.nc ${run}_003_${dim}_ps5km60N.nc ${outdir}/${run}_003_${dim}_ps5km60N
+                    # Create record dimension (required for ncra)
+                    echo "ncks on ${direc}/${run}_000_${dim}_ps5km60N.nc" >> $logfile
+                    ncks --mk_rec_dmn time ${direc}/${run}_000_${dim}_ps5km60N.nc /tmp/tmp${run}.nc 2>> $logfile
+
+                    # Run weighted average
+                    echo "ncra on /tmp/tmp${run}.nc ${direc}/${run}_001_${dim}_ps5km60N.nc ${direc}/${run}_002_${dim}_ps5km60N.nc ${direc}/${run}_003_${dim}_ps5km60N.nc" >> $logfile
+                    ncra -w 0.5,1,1,0.5 -o ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc /tmp/tmp${run}.nc ${direc}/${run}_001_${dim}_ps5km60N.nc ${direc}/${run}_002_${dim}_ps5km60N.nc ${direc}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
                     rm /tmp/*.nc
+
+                    # Set time value to last timestamp in average
+                    echo "Fixing time on ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc" >> $logfile
+                    ncrename -v time,time_old  ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
+                    ncks -A -v time ${direc}/${run}_003_${dim}_ps5km60N.nc  ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
+                    ncks -O -x -v 'time_old' ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
                 else
                     echo "ln -s ${file::-17}03*.nc ${outdir}/${dim}/${run::-4}/" >> $logfile
                     ln -s ${file::-17}03*.nc ${outdir}/${dim}/${run::-4}/ 2>> $logfile
@@ -59,51 +69,25 @@ for dim in $dims ; do
                 # Generate average or create symbolic link to average
                 if [ -e ${file::-17}05_${dim}_ps5km60N.nc ]
                 then
-                    ncks --mk_rec_dmn time ${run}_003_${dim}_ps5km60N.nc /tmp/tmp${run}.nc
-                    ncra -w 0.5,1,1,0.5 ${workingDir}/tmp${run}.nc ${run}_004_${dim}_ps5km60N.nc ${run}_005_${dim}_ps5km60N.nc ${run}_006_${dim}_ps5km60N.nc ${outdir}/${run}_006_${dim}_ps5km60N
+                    # Create record dimension (required for ncra)
+                    echo "ncks on ${direc}/${run}_003_${dim}_ps5km60N.nc" >> $logfile
+                    ncks --mk_rec_dmn time ${direc}/${run}_003_${dim}_ps5km60N.nc /tmp/tmp${run}.nc
+
+                    # Run weighted average
+                    echo "ncra on /tmp/tmp${run}.nc ${direc}/${run}_004_${dim}_ps5km60N.nc ${direc}/${run}_005_${dim}_ps5km60N.nc ${direc}/${run}_006_${dim}_ps5km60N.nc" >> $logfile
+                    ncra -w 0.5,1,1,0.5 -o ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc /tmp/tmp${run}.nc ${direc}/${run}_004_${dim}_ps5km60N.nc ${direc}/${run}_005_${dim}_ps5km60N.nc ${direc}/${run}_006_${dim}_ps5km60N.nc 
                     rm /tmp/*.nc
+
+                    # Set time value to last timestamp in average
+                    ncrename -v time,time_old  ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc 2>> $logfile
+                    ncks -A -v time ${direc}/${run}_006_${dim}_ps5km60N.nc  ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc 2>> $logfile
+                    ncks -O -x -v 'time_old' ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
                 else
                     echo "ln -s ${file::-17}06*.nc ${outdir}/${dim}/" >> $logfile
                     ln -s ${file::-17}06*.nc ${outdir}/${dim}/ 2>> $logfile
                 fi
             fi
         done
-    done
-done
-
-# Generate monthly averages
-days="31 28 31 30 31 30 31 31 30 31 30 31"
-daysleap="31 29 31 30 31 30 31 31 30 31 30 31"
-monthDir=''
-
-if [ ! -d ${monthDir} ]
-then
-    mkdir $monthDir
-fi
-
-for dim in $dims ; do
-    # Create subdirs if non-existing
-    if [ ! -d ${monthDir}/${dim}/ ]
-    then
-        mkdir ${monthDir}/${dim}/
-    fi
-
-    allFiles=`find ${outdir} -type f -name "*${dim}_ps5km60N.nc"`
-    for file in $allFiles ; do
-        fname=`filename $file`
-
-        # index for month starting at 0
-        month=$((${fname:4:2} - 1))
-        year=${fname:0:4}
-        
-        if [ ! -e ${monthDir}/${dim}/${fname::-21}.nc ]
-        then
-            # leapYear check
-            date -d $year-02-29 &>/dev/null && monthDays=$daysleap || monthDays=$days
-            thisMonth=`find ${outdir} -type f -name "${fname::-21}*_${dim}_ps5km60N.nc"`
-            if [[ $(( monthDays[${month}] * 8 )) == ${#thisMonth[@]} ]] ; then
-                ncra $thisMonth ${monthDir}/${dim}/${fname:0:6}.nc
-            fi
-        fi
+        echo "" >> $logfile
     done
 done
