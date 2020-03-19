@@ -40,11 +40,6 @@ for dim in $dims ; do
             if [[ $(( ${monthDays[$month]} * 8 )) == $((${count} + 1)) ]]
             then
                 ncra -o ${outDir}/${dim}/${fname:0:6}.nc $thisMonth
-
-                # fix timestamp
-                ncrename -v time,time_old ${outDir}/${dim}/${fname:0:6}.nc 2>> $logfile
-                ncks -A -v time ${thisMonth[-1]} ${outDir}/${dim}/${fname:0:6}.nc 2>> $logfile
-                ncks -O -x -v 'time_old' ${outDir}/${dim}/${fname:0:6}.nc ${outDir}/${dim}/${fname:0:6}.nc 2>> $logfile
             else
                 echo "Files missing for ${fname:0:6}"
             fi
