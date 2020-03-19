@@ -84,7 +84,7 @@ for dim in $dims ; do
                     ncks -O -x -v 'time_old' ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
                 else
                     echo "ln -s ${file::-17}06*.nc ${outdir}/${dim}/" >> $logfile
-                    ln -s ${file::-17}06*.nc ${outdir}/${dim}/ 2>> $logfile
+                    ln -s ${file::-17}06*.nc ${outdir}/${dim}/${run::-4}/ 2>> $logfile
                 fi
             fi
         done
