@@ -58,6 +58,7 @@ for dim in $dims ; do
                 ncks --mk_rec_dmn time ${arr[0]} /tmp/tmp${fname:0:6}${dim}.nc
                 arr[0]=/tmp/tmp${fname:0:6}${dim}.nc
                 ncra -o ${outDir}/${dim}/${fname:0:6}.nc ${arr[@]}
+                echo "Done."
                 rm /tmp/*.nc
                 echo ''
             else
