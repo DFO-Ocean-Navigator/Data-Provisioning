@@ -36,9 +36,9 @@ for dim in $dims ; do
         fi
         year=${fname:0:4}
 
-        if [ ! -e ${outDir}/${dim}/${fname:0:6}.nc ] && [[ ! "${attempt[@]} " =~ " ${fname:0:6} "]]
+        if ([ ! -e ${outDir}/${dim}/${fname:0:6}.nc ] && [[ ! " ${attempt[@]} " =~ " ${fname:0:6}${dim} " ]])
         then
-            arr=(${arr[@]} "${fname:0:6}")
+            attempt=(${attempt[@]} "${fname:0:6}${dim}")
             # leapYear check
             date -d $year-02-29 &>/dev/null && monthDays=(31 29 31 30 31 30 31 31 30 31 30 31) || monthDays=(31 29 31 30 31 30 31 31 30 31 30 31)
 
@@ -49,18 +49,20 @@ for dim in $dims ; do
                 arr=(${arr[@]} "$names")
             done
 
-            echo "${count} files found for ${fname:0:6} ${dim}"
-            echo "Expected: $(( monthDays[$month] * 8 ))"
+            echo "${count} files found for ${fname:0:6} ${dim}" | tee -a riopsMonthly.log
+            echo "Expected: $(( monthDays[$month] * 8 ))"  | tee -a riopsMonthly.log
 
             if [[ $(( monthDays[$month] * 8 )) == ${count} ]]
             then
-                echo "Starting average for ${fname:0:6} ${dim}.. "
-                ncks --mk_rec_dmn time ${arr[0]} /tmp/tmp${fname:0:6}.nc
-                arr[0]=/tmp/tmp${fname:0:6}.nc
+                echo "Starting average for ${fname:0:6} ${dim}.. " | tee -a riopsMonthly.log
+                ncks --mk_rec_dmn time ${arr[0]} /tmp/tmp${fname:0:6}${dim}.nc
+                arr[0]=/tmp/tmp${fname:0:6}${dim}.nc
                 ncra -o ${outDir}/${dim}/${fname:0:6}.nc ${arr[@]}
+                rm /tmp/*.nc
             else
-                echo "Files missing for ${fname:0:6}"
+                echo "Files missing for ${fname:0:6} ${dim}" | tee -a riopsMonthly.log
             fi
         fi
+        echo ''
     done
 done
