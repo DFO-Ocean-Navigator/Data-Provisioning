@@ -28,16 +28,21 @@ for dim in $dims ; do
         fname=`filename $file`
 
         # index for month starting at 0
-        month=$((${fname:4:2} - 1))
+        if [[ ${fname:4:1} == '0' ]]
+        then
+            month=$((${fname:5:1} - 1))
+        else
+            month=$((${fname:4:2} - 1))
+        fi
         year=${fname:0:4}
         
         if [ ! -e ${outDir}/${dim}/${fname:0:6}.nc ]
         then
             # leapYear check
             date -d $year-02-29 &>/dev/null && monthDays=$daysleap || monthDays=$days
-            thisMonth=`find ${outdir} -type l,f -name "${fname:0:6}*${dim}_ps5km60N.nc"`
+            thisMonth=`find ${riopsDir} -type l,f -name "${fname:0:6}*${dim}_ps5km60N.nc"`
             count=`du -ch $thisMonth | tail -1 | cut -f 1`
-            if [[ $(( ${monthDays[$month]} * 8 )) == $((${count} + 1)) ]]
+            if [[ $(( monthDays[$month] * 8 )) == ${count} ]]
             then
                 ncra -o ${outDir}/${dim}/${fname:0:6}.nc $thisMonth
             else
