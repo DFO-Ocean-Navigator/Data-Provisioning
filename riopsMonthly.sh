@@ -59,10 +59,11 @@ for dim in $dims ; do
                 arr[0]=/tmp/tmp${fname:0:6}${dim}.nc
                 ncra -o ${outDir}/${dim}/${fname:0:6}.nc ${arr[@]}
                 rm /tmp/*.nc
+                echo ''
             else
                 echo "Files missing for ${fname:0:6} ${dim}" | tee -a riopsMonthly.log
+                echo ''
             fi
         fi
-        echo ''
     done
 done
