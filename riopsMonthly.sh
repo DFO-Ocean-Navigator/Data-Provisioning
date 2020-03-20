@@ -5,11 +5,13 @@
 logfile='riopsMonthly.log'
 
 # 3h average directory
-riopsDir='/home/buildadm/linkout'
+riopsDir='/data/RIOPS/riopsf'
 outDir='/home/buildadm/monthlyout'
 dims="2D 3D"
 days=(31 28 31 30 31 30 31 31 30 31 30 31)
 daysleap=(31 29 31 30 31 30 31 31 30 31 30 31)
+
+attempt=()
 
 if [ ! -d ${outDir} ]
 then
@@ -36,16 +38,28 @@ for dim in $dims ; do
         fi
         year=${fname:0:4}
 
-        if [ ! -e ${outDir}/${dim}/${fname:0:6}.nc ]
+        if [ ! -e ${outDir}/${dim}/${fname:0:6}.nc ] && [ ! ]
         then
             # leapYear check
-            date -d $year-02-29 &>/dev/null && monthDays=$daysleap || monthDays=$days
+            date -d $year-02-29 &>/dev/null && monthDays=(31 29 31 30 31 30 31 31 30 31 30 31) || monthDays=(31 29 31 30 31 30 31 31 30 31 30 31)
+
+            arr=()
             thisMonth=`find ${riopsDir} -type l,f -name "${fname:0:6}*${dim}_ps5km60N.nc"`
             count=`echo $thisMonth | tr " " "\n" | wc -l`
+            for names in thisMonth ; do
+                arr=(${arr[@]} "$names")
+            done
+
             echo "${count} files found for ${fname:0:6}"
+            echo "Expected: $(( monthDays[$month] * 8 ))"
+            echo "Found: ${count}"
+
             if [[ $(( monthDays[$month] * 8 )) == ${count} ]]
             then
-                ncra -o ${outDir}/${dim}/${fname:0:6}.nc $thisMonth
+                echo "Starting average for ${fname:0:6}.."
+                ncks --mk_rec_dmn time ${arr[0]} /tmp/tmp${fname:0:6}.nc
+                arr[0]=/tmp/tmp${fname:0:6}.nc
+                ncra -o ${outDir}/${dim}/${fname:0:6}.nc ${arr[@]}
             else
                 echo "Files missing for ${fname:0:6}"
             fi
