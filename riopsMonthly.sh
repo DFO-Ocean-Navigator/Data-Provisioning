@@ -35,13 +35,14 @@ for dim in $dims ; do
             month=$((${fname:4:2} - 1))
         fi
         year=${fname:0:4}
-        
+
         if [ ! -e ${outDir}/${dim}/${fname:0:6}.nc ]
         then
             # leapYear check
             date -d $year-02-29 &>/dev/null && monthDays=$daysleap || monthDays=$days
             thisMonth=`find ${riopsDir} -type l,f -name "${fname:0:6}*${dim}_ps5km60N.nc"`
-            count=`du -ch $thisMonth | tail -1 | cut -f 1`
+            count=`echo $thisMonth | tr " " "\n" | wc -l`
+            echo "${count} files found for ${fname:0:6}"
             if [[ $(( monthDays[$month] * 8 )) == ${count} ]]
             then
                 ncra -o ${outDir}/${dim}/${fname:0:6}.nc $thisMonth
