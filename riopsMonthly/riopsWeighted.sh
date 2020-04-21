@@ -3,7 +3,7 @@
 # list of directories that RIOPS files exist in, seperated by spaces
 directories=''
 
-logfile='weightedavgWrap.log'
+logfile='riopsWeighted.sh'
 outdir=''
 dims='2D 3D'
 
@@ -42,6 +42,7 @@ for dim in $dims ; do
                 # Generate average or create symbolic link to average
                 if [ -e ${file::-17}02_${dim}_ps5km60N.nc ]
                 then
+		    direc=`dirname $file`
                     # Create record dimension (required for ncra)
                     echo "ncks on ${direc}/${run}_000_${dim}_ps5km60N.nc" >> $logfile
                     ncks --mk_rec_dmn time ${direc}/${run}_000_${dim}_ps5km60N.nc /tmp/tmp${run}.nc 2>> $logfile
@@ -57,7 +58,7 @@ for dim in $dims ; do
                     ncks -A -v time ${direc}/${run}_003_${dim}_ps5km60N.nc  ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
                     ncks -O -x -v 'time_old' ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
                 else
-                    echo "ln -s ${file::-17}03*.nc ${outdir}/${dim}/${run::-4}/" >> $logfile
+                    echo "ln -s ${file::-17}03_${dim}_ps5km60N.nc ${outdir}/${dim}/${run::-4}/" >> $logfile
                     ln -s ${file::-17}03*.nc ${outdir}/${dim}/${run::-4}/ 2>> $logfile
                 fi
             fi
@@ -83,7 +84,7 @@ for dim in $dims ; do
                     ncks -A -v time ${direc}/${run}_006_${dim}_ps5km60N.nc  ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc 2>> $logfile
                     ncks -O -x -v 'time_old' ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc ${outdir}/${dim}/${run::-4}/${run}_003_${dim}_ps5km60N.nc 2>> $logfile
                 else
-                    echo "ln -s ${file::-17}06*.nc ${outdir}/${dim}/" >> $logfile
+                    echo "ln -s ${file::-17}06_${dim}.nc ${outdir}/${dim}/" >> $logfile
                     ln -s ${file::-17}06*.nc ${outdir}/${dim}/${run::-4}/ 2>> $logfile
                 fi
             fi

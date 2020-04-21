@@ -1,0 +1,3 @@
+`riopsWeighted.sh` is a script to conglomerate and normalize riops files into 3h averages so that `riopsMonthly.sh` can quickly make monthly averages. The input directories of `riopsWeighted.sh` should be any location where RIOPS files are being pulled down. The input directory of `riopsMonthly.sh` should be the output of `riopsWerighted.sh`. They should be run on the first of every month, or right after the last data from the previous month is pulled down.
+
+These scripts can be easily modified to only look for a specific year by specifying "YYYY" at the beginning of the name pattern for the find commands near the beginning of both scripts.

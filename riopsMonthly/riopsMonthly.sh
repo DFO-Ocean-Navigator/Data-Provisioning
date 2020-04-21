@@ -5,8 +5,8 @@
 logfile='riopsMonthly.log'
 
 # 3h average directory
-riopsDir='/data/RIOPS/riopsf'
-outDir='/home/buildadm/monthlyout'
+riopsDir=''
+outDir=''
 dims="2D 3D"
 
 attempt=()
@@ -40,7 +40,7 @@ for dim in $dims ; do
         then
             attempt=(${attempt[@]} "${fname:0:6}${dim}")
             # leapYear check
-            date -d $year-02-29 &>/dev/null && monthDays=(31 29 31 30 31 30 31 31 30 31 30 31) || monthDays=(31 29 31 30 31 30 31 31 30 31 30 31)
+            date -d $year-02-29 &>/dev/null && monthDays=(31 29 31 30 31 30 31 31 30 31 30 31) || monthDays=(31 28 31 30 31 30 31 31 30 31 30 31)
 
             arr=()
             thisMonth=`find ${riopsDir} -type l,f -name "${fname:0:6}*${dim}_ps5km60N.nc"`
