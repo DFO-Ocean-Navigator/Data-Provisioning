@@ -72,11 +72,11 @@ for dim in $dims ; do
                 then
                     # Create record dimension (required for ncra)
                     echo "ncks on ${direc}/${run}_003_${dim}_ps5km60N.nc" >> $logfile
-                    ncks --mk_rec_dmn time ${direc}/${run}_003_${dim}_ps5km60N.nc /tmp/tmp${run}.nc
+                    ncks --mk_rec_dmn time ${direc}/${run}_003_${dim}_ps5km60N.nc /tmp/tmp${run}.nc 2>> $logfile
 
                     # Run weighted average
                     echo "ncra on /tmp/tmp${run}.nc ${direc}/${run}_004_${dim}_ps5km60N.nc ${direc}/${run}_005_${dim}_ps5km60N.nc ${direc}/${run}_006_${dim}_ps5km60N.nc" >> $logfile
-                    ncra -w 0.5,1,1,0.5 -o ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc /tmp/tmp${run}.nc ${direc}/${run}_004_${dim}_ps5km60N.nc ${direc}/${run}_005_${dim}_ps5km60N.nc ${direc}/${run}_006_${dim}_ps5km60N.nc 
+                    ncra -w 0.5,1,1,0.5 -o ${outdir}/${dim}/${run::-4}/${run}_006_${dim}_ps5km60N.nc /tmp/tmp${run}.nc ${direc}/${run}_004_${dim}_ps5km60N.nc ${direc}/${run}_005_${dim}_ps5km60N.nc ${direc}/${run}_006_${dim}_ps5km60N.nc 2>> $logfile
                     rm /tmp/*.nc
 
                     # Set time value to last timestamp in average

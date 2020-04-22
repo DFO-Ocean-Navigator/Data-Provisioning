@@ -9,6 +9,8 @@ riopsDir=''
 outDir=''
 dims="2D 3D"
 
+# This array will be appended when a month is attempted
+# It is used for the if statement on line 42
 attempt=()
 
 if [ ! -d ${outDir} ]
@@ -36,6 +38,7 @@ for dim in $dims ; do
         fi
         year=${fname:0:4}
 
+        # If month isn't already create AND month doesn't exist in the attempt array
         if ([ ! -e ${outDir}/${dim}/${fname:0:6}.nc ] && [[ ! " ${attempt[@]} " =~ " ${fname:0:6}${dim} " ]])
         then
             attempt=(${attempt[@]} "${fname:0:6}${dim}")
@@ -55,9 +58,9 @@ for dim in $dims ; do
             if [[ $(( monthDays[$month] * 8 )) == ${count} ]]
             then
                 echo "Starting average for ${fname:0:6} ${dim}.. " | tee -a riopsMonthly.log
-                ncks --mk_rec_dmn time ${arr[0]} /tmp/tmp${fname:0:6}${dim}.nc
+                ncks --mk_rec_dmn time ${arr[0]} /tmp/tmp${fname:0:6}${dim}.nc 2>&1 >/dev/null | tee -a riopsMonthly.log
                 arr[0]=/tmp/tmp${fname:0:6}${dim}.nc
-                ncra -o ${outDir}/${dim}/${fname:0:6}.nc ${arr[@]}
+                ncra -o ${outDir}/${dim}/${fname:0:6}.nc ${arr[@]} 2>&1 >/dev/null | tee -a riopsMonthly.log
                 echo "Done."
                 rm /tmp/*.nc
                 echo ''
